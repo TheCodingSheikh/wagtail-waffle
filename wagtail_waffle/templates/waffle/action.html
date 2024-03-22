@@ -1,0 +1,56 @@
+{% extends 'wagtailadmin/bulk_actions/confirmation/base.html' %}
+{% load i18n wagtailadmin_tags %}
+
+{% block titletag %}{% blocktrans trimmed count counter=items|length %}Change 1 {{ waffle_type.verbose_name }} {% plural %}Change for {{ counter }} {{ waffle_type.verbose_name_plural }}{% endblocktrans %}{% endblock %}
+
+{% block header %}
+{% with action|capfirst as header_str %}
+{% include "wagtailadmin/shared/header.html" with title=header_str %}
+{% endwith %}
+{% endblock header %}
+
+{% block items_with_access %}
+    {% if items %}
+        <p>Are you sure you want to {{ action }} these {{ waffle_type.verbose_name_plural }}?</p>
+        <ul>
+            {% for waffle in items %}
+                <li>
+                    {{waffle.item}}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock items_with_access %}
+
+{% block items_with_no_access %}
+    {% if items_with_no_access|length == 1 %}
+        {% blocktrans with action=action waffle_type_name=waffle_type.verbose_name trimmed asvar no_access_msg %}
+            You don't have permission to {{ action }} this {{ waffle_type_name }}
+        {% endblocktrans %}
+    {% else %}
+        {% blocktrans with action=action waffle_plural_name=waffle_type.verbose_name_plural trimmed asvar no_access_msg %}
+            You don't have permission to {{ action }} these {{ waffle_plural_name }}
+        {% endblocktrans %}
+    {% endif %}
+    {% include 'wagtailsnippets/bulk_actions/list_items_with_no_access.html' with items=items_with_no_access no_access_msg=no_access_msg %}
+{% endblock items_with_no_access %}
+
+
+{% block form_section %}
+    {% if items %}
+    {% blocktrans with action=action asvar action_button_text %}
+        Yes, {{ action }}
+    {% endblocktrans %}
+    {% blocktrans with action=action asvar no_action_button_text %}
+        No, don't {{ action }}
+    {% endblocktrans %}
+    {% if action == "delete" %}
+        {% include 'wagtailadmin/bulk_actions/confirmation/form_with_fields.html' with action_button_class="serious" %}
+    {% else %}
+    {% include 'wagtailadmin/bulk_actions/confirmation/form_with_fields.html' %}
+    {% endif %}
+
+    {% else %}
+        {% include 'wagtailadmin/bulk_actions/confirmation/go_back.html' %}
+    {% endif %}
+{% endblock form_section %}
